@@ -1,0 +1,634 @@
+:root {
+  color-scheme: dark;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #0d0f12;
+  color: #f7f3ea;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  --bg: #0d0f12;
+  --panel: #171a20;
+  --panel-soft: #20252d;
+  --line: #303640;
+  --text: #f7f3ea;
+  --muted: #aeb6c2;
+  --green: #8ee6a9;
+  --green-panel: #173623;
+  --blue-panel: #182c40;
+  --red: #ff8b86;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button,
+select,
+input {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-soft);
+  color: var(--text);
+}
+
+button {
+  min-height: 48px;
+  padding: 10px 14px;
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+button:disabled {
+  opacity: 0.35;
+}
+
+input,
+select {
+  min-height: 44px;
+  width: 100%;
+  padding: 9px 10px;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+.app-shell {
+  width: min(100%, 780px);
+  margin: 0 auto;
+  padding: max(18px, env(safe-area-inset-top)) 18px max(22px, env(safe-area-inset-bottom));
+}
+
+.home-shell {
+  min-height: 100svh;
+}
+
+.date-row,
+.top-row,
+.history-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.date-row {
+  color: var(--muted);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.simple-home-header {
+  padding: 10px 0 14px;
+}
+
+.simple-home-header h1 {
+  margin-top: 10px;
+  font-size: clamp(2.3rem, 11vw, 4.5rem);
+  line-height: 0.95;
+  max-width: 7ch;
+}
+
+.page-title {
+  font-size: clamp(1.7rem, 8vw, 2.6rem);
+  line-height: 1;
+}
+
+.today-card {
+  display: grid;
+  gap: 13px;
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+}
+
+.today-card > span {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.today-card h2 {
+  font-size: clamp(1.5rem, 7vw, 2.2rem);
+  line-height: 1.08;
+}
+
+.start-workout-button,
+.resume-button,
+.done-button {
+  background: var(--green-panel);
+  border-color: rgba(142, 230, 169, 0.6);
+  color: var(--green);
+}
+
+.start-workout-button {
+  min-height: 64px;
+  font-size: 1.25rem;
+}
+
+.change-workout-button,
+.quiet-button {
+  background: transparent;
+}
+
+.workout-picker {
+  display: grid;
+  gap: 8px;
+}
+
+.workout-picker button {
+  min-height: 48px;
+  text-align: left;
+}
+
+.resume-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin: 10px 0;
+  min-height: 58px;
+}
+
+.home-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.home-actions button {
+  min-height: 56px;
+  background: var(--panel);
+}
+
+.home-actions .toggle-on {
+  background: var(--green-panel);
+  border-color: rgba(142, 230, 169, 0.6);
+  color: var(--green);
+}
+
+.workout-screen {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: 100svh;
+  max-height: 100svh;
+  overflow: hidden;
+  padding:
+    max(12px, env(safe-area-inset-top))
+    14px
+    max(12px, env(safe-area-inset-bottom));
+  background: #0b0d10;
+}
+
+.workout-top {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding-top: 2px;
+}
+
+.workout-top span,
+.workout-top small,
+.current-view span,
+.rest-view span,
+.next-line span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.workout-top strong {
+  font-size: clamp(2.2rem, 11vw, 3.6rem);
+  line-height: 0.98;
+}
+
+.workout-top small {
+  color: var(--green);
+  text-transform: none;
+}
+
+.workout-body {
+  display: grid;
+  align-content: center;
+  gap: min(2.3svh, 18px);
+  min-height: 0;
+  padding: 6px 0;
+}
+
+.workout-name {
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 900;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.current-view,
+.rest-view {
+  display: grid;
+  gap: 7px;
+  justify-items: center;
+  text-align: center;
+}
+
+.current-view h1 {
+  max-width: 16ch;
+  font-size: clamp(1.8rem, 9vw, 3rem);
+  line-height: 1.02;
+}
+
+.current-view p {
+  color: var(--muted);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.current-view strong {
+  color: var(--green);
+  font-size: clamp(2rem, 10vw, 3.2rem);
+  line-height: 1;
+}
+
+.rest-view strong {
+  color: var(--green);
+  font-size: clamp(3.4rem, 18vw, 5.7rem);
+  line-height: 0.95;
+}
+
+.rest-view p {
+  font-size: clamp(1.25rem, 6vw, 2rem);
+  font-weight: 900;
+}
+
+.next-line {
+  display: grid;
+  gap: 3px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.next-line strong {
+  font-size: 1.05rem;
+  line-height: 1.1;
+}
+
+.next-line small {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.workout-controls {
+  display: grid;
+  gap: 9px;
+}
+
+.value-stepper {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr) 70px;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.value-stepper div {
+  display: grid;
+  place-items: center;
+  min-height: 50px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  font-size: 1.15rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.rest-actions,
+.workout-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.rest-actions button,
+.workout-actions button {
+  min-height: 52px;
+  padding: 8px;
+  font-size: 0.95rem;
+}
+
+.workout-actions button:first-child {
+  background: var(--blue-panel);
+  border-color: rgba(117, 176, 240, 0.55);
+}
+
+.stop-button {
+  width: 100%;
+  min-height: 52px;
+  background: rgba(255, 139, 134, 0.12);
+  border-color: rgba(255, 139, 134, 0.5);
+  color: #ffd5d2;
+}
+
+.danger {
+  background: rgba(255, 139, 134, 0.13);
+  border-color: rgba(255, 139, 134, 0.55);
+  color: #ffd5d2;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: rgba(0, 0, 0, 0.62);
+}
+
+.stop-modal {
+  display: grid;
+  gap: 10px;
+  width: min(100%, 360px);
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #171a20;
+}
+
+.stop-modal h2 {
+  margin-bottom: 4px;
+  font-size: 1.65rem;
+}
+
+.top-row {
+  margin-bottom: 14px;
+}
+
+.quiet-button {
+  min-width: 88px;
+}
+
+.list-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.empty-state {
+  padding: 24px 0;
+  color: var(--muted);
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.history-item {
+  display: grid;
+  gap: 9px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.history-top strong {
+  font-size: 1.08rem;
+}
+
+.history-top span {
+  color: var(--green);
+  font-weight: 900;
+}
+
+.history-item p {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.progress-shell {
+  width: min(100%, 1120px);
+}
+
+.progress-tools {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.sheet-table {
+  display: grid;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.sheet-header,
+.sheet-row {
+  display: grid;
+  grid-template-columns: 120px 190px 170px 170px minmax(180px, 1fr);
+  min-width: 830px;
+}
+
+.sheet-header {
+  position: sticky;
+  top: 0;
+  background: #212630;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 900;
+}
+
+.sheet-header span,
+.sheet-row span,
+.sheet-row strong {
+  min-height: 42px;
+  padding: 10px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+
+.sheet-row strong {
+  font-size: 0.95rem;
+}
+
+.editor-shell {
+  width: min(100%, 920px);
+}
+
+.edit-choice-list {
+  display: grid;
+  gap: 10px;
+}
+
+.edit-choice-list button {
+  display: grid;
+  gap: 4px;
+  min-height: 72px;
+  text-align: left;
+}
+
+.edit-choice-list span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.workout-editor {
+  display: grid;
+  gap: 14px;
+}
+
+.workout-editor h2 {
+  font-size: 1.45rem;
+}
+
+.editor-section {
+  display: grid;
+  gap: 10px;
+}
+
+.editor-section-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.exercise-editor {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.exercise-editor label {
+  display: grid;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 900;
+}
+
+.editor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.check-row,
+.editor-actions-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.check-row label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--text);
+  background: #11151a;
+}
+
+.check-row input {
+  width: auto;
+  min-height: auto;
+}
+
+@media (min-width: 720px) {
+  .app-shell {
+    padding: 28px;
+  }
+
+  .home-actions {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .today-card {
+    padding: 20px;
+  }
+
+  .workout-screen {
+    width: min(100%, 760px);
+    margin: 0 auto;
+  }
+
+  .editor-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-height: 720px) {
+  .workout-screen {
+    gap: 0;
+    padding-top: max(8px, env(safe-area-inset-top));
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+
+  .workout-top strong {
+    font-size: 2.15rem;
+  }
+
+  .current-view h1 {
+    font-size: 1.75rem;
+  }
+
+  .current-view strong {
+    font-size: 2rem;
+  }
+
+  .rest-view strong {
+    font-size: 3.2rem;
+  }
+
+  .next-line {
+    padding: 9px;
+  }
+
+  .value-stepper div,
+  .rest-actions button,
+  .workout-actions button,
+  .stop-button {
+    min-height: 46px;
+  }
+}
