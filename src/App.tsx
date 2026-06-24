@@ -74,9 +74,44 @@ function phaseElapsedSeconds(state: ActiveWorkoutState, now = Date.now()): numbe
   return Math.max(0, (end - state.phaseStartedAt - state.phasePausedMs) / 1000);
 }
 
-function isRestAllowed(item: PlannedExercise): boolean {
+function getSupersetRange(plan: PlannedExercise[], index: number): { start: number; end: number } | null {
+  const group = plan[index]?.exercise.supersetGroup;
+  if (!group) return null;
+
+  let start = index;
+  while (start > 0 && plan[start - 1].exercise.supersetGroup === group) {
+    start -= 1;
+  }
+
+  let end = index;
+  while (end + 1 < plan.length && plan[end + 1].exercise.supersetGroup === group) {
+    end += 1;
+  }
+
+  return { start, end };
+}
+
+function isLastSupersetExerciseForSet(state: ActiveWorkoutState): boolean {
+  const range = getSupersetRange(state.plan, state.currentIndex);
+  if (!range) return true;
+
+  for (let index = state.currentIndex + 1; index <= range.end; index += 1) {
+    if (state.plan[index].exercise.sets >= state.currentSet) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function isRestAllowed(state: ActiveWorkoutState, item: PlannedExercise): boolean {
   const section = item.sectionName.toLowerCase();
-  return section !== "warm-up" && section !== "mobility" && (item.exercise.restSeconds ?? 0) > 0;
+  return (
+    !section.includes("warm-up") &&
+    !section.includes("mobility") &&
+    (item.exercise.restSeconds ?? 0) > 0 &&
+    isLastSupersetExerciseForSet(state)
+  );
 }
 
 function createInitialValues(
@@ -119,6 +154,28 @@ function getStepTarget(
 function getNextStep(state: ActiveWorkoutState): { index: number; set: number } | null {
   const item = state.plan[state.currentIndex];
   if (!item) return null;
+
+  const supersetRange = getSupersetRange(state.plan, state.currentIndex);
+  if (supersetRange) {
+    for (let index = state.currentIndex + 1; index <= supersetRange.end; index += 1) {
+      if (state.plan[index].exercise.sets >= state.currentSet) {
+        return { index, set: state.currentSet };
+      }
+    }
+
+    for (let index = supersetRange.start; index <= supersetRange.end; index += 1) {
+      if (state.plan[index].exercise.sets >= state.currentSet + 1) {
+        return { index, set: state.currentSet + 1 };
+      }
+    }
+
+    if (supersetRange.end + 1 < state.plan.length) {
+      return { index: supersetRange.end + 1, set: 1 };
+    }
+
+    return null;
+  }
+
   if (state.currentSet < item.exercise.sets) {
     return { index: state.currentIndex, set: state.currentSet + 1 };
   }
@@ -182,7 +239,7 @@ function restOrMove(
   now: number,
 ): { state: ActiveWorkoutState | null; finished: boolean } {
   const hasNext = getNextStep(state);
-  if (hasNext && isRestAllowed(completedItem)) {
+  if (hasNext && isRestAllowed(state, completedItem)) {
     return {
       finished: false,
       state: startPhase(
