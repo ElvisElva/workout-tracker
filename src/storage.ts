@@ -6,8 +6,8 @@ import {
 } from "./types";
 import { DEFAULT_WORKOUTS } from "./workouts";
 
-const WORKOUTS_KEY = "workout-tracker.workouts.v3";
-const ACTIVE_KEY = "workout-tracker.active.v3";
+const WORKOUTS_KEY = "workout-tracker.workouts.v4";
+const ACTIVE_KEY = "workout-tracker.active.v4";
 const HISTORY_KEY = "workout-tracker.history.v1";
 const PROGRESSION_KEY = "workout-tracker.progression.v1";
 const BARE_MINIMUM_KEY = "workout-tracker.bare-minimum.v1";
