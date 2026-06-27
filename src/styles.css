@@ -371,8 +371,9 @@ p {
 }
 
 .modal-backdrop {
-  position: absolute;
+  position: fixed;
   inset: 0;
+  z-index: 10;
   display: grid;
   place-items: center;
   padding: 22px;
@@ -392,6 +393,35 @@ p {
 .stop-modal h2 {
   margin-bottom: 4px;
   font-size: 1.65rem;
+}
+
+.choice-modal {
+  width: min(100%, 430px);
+}
+
+.choice-group {
+  display: grid;
+  gap: 8px;
+}
+
+.choice-group > strong {
+  font-size: 1rem;
+}
+
+.choice-list {
+  display: grid;
+  gap: 8px;
+}
+
+.choice-list button {
+  min-height: 50px;
+  text-align: left;
+}
+
+.choice-list .choice-active {
+  background: var(--green-panel);
+  border-color: rgba(142, 230, 169, 0.6);
+  color: var(--green);
 }
 
 .top-row {
