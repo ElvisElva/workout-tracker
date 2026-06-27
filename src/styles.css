@@ -275,6 +275,12 @@ p {
   font-weight: 800;
 }
 
+.current-view small {
+  color: var(--muted);
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
 .current-view strong {
   color: var(--green);
   font-size: clamp(2rem, 10vw, 3.2rem);
