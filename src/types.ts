@@ -27,6 +27,8 @@ export interface Exercise {
   distanceUnit?: DistanceUnit;
   restSeconds?: number;
   supersetGroup?: string;
+  optionGroup?: string;
+  optionLabel?: string;
   isBareMinimum?: boolean;
   isOptional?: boolean;
   isMustTrack?: boolean;
