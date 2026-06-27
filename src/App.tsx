@@ -43,6 +43,18 @@ import { MUST_TRACK_BASELINES } from "./workouts";
 
 type View = "home" | "workout" | "history" | "progress" | "edit";
 
+type OptionChoiceGroup = {
+  id: string;
+  label: string;
+  choices: Exercise[];
+};
+
+type PendingWorkoutOptions = {
+  workout: WorkoutDay;
+  groups: OptionChoiceGroup[];
+  selected: Record<string, string>;
+};
+
 type WakeLockSentinelLike = {
   release: () => Promise<void>;
   addEventListener: (event: "release", listener: () => void) => void;
@@ -112,6 +124,29 @@ function isRestAllowed(state: ActiveWorkoutState, item: PlannedExercise): boolea
     (item.exercise.restSeconds ?? 0) > 0 &&
     isLastSupersetExerciseForSet(state)
   );
+}
+
+function optionGroupLabel(id: string): string {
+  if (id === "thursday-vo2") return "VO2 max";
+  if (id === "saturday-zone2") return "Zone 2";
+  return "Choose one";
+}
+
+function collectOptionGroups(workout: WorkoutDay): OptionChoiceGroup[] {
+  const groups = new Map<string, Exercise[]>();
+
+  workout.sections.forEach((section) => {
+    section.exercises.forEach((exercise) => {
+      if (!exercise.optionGroup) return;
+      groups.set(exercise.optionGroup, [...(groups.get(exercise.optionGroup) ?? []), exercise]);
+    });
+  });
+
+  return Array.from(groups.entries()).map(([id, choices]) => ({
+    id,
+    label: optionGroupLabel(id),
+    choices,
+  }));
 }
 
 function createInitialValues(
@@ -405,6 +440,7 @@ export default function App() {
   const [showWorkoutPicker, setShowWorkoutPicker] = useState(false);
   const [selectedWorkoutId, setSelectedWorkoutId] = useState("");
   const [stopPrompt, setStopPrompt] = useState(false);
+  const [pendingOptions, setPendingOptions] = useState<PendingWorkoutOptions | null>(null);
   const [progressFilter, setProgressFilter] = useState("");
   const [editWorkoutId, setEditWorkoutId] = useState("");
 
@@ -495,16 +531,8 @@ export default function App() {
     setBareMinimum((value) => !value);
   }
 
-  function startWorkout(workout: WorkoutDay) {
-    if (active) {
-      const replace = window.confirm("Replace the saved workout in progress?");
-      if (!replace) {
-        setView("workout");
-        return;
-      }
-    }
-
-    const plan = flattenWorkout(workout, bareMinimum);
+  function beginWorkout(workout: WorkoutDay, selectedOptions: Record<string, string>) {
+    const plan = flattenWorkout(workout, bareMinimum, selectedOptions);
     if (plan.length === 0) {
       window.alert("No exercises found for this mode.");
       return;
@@ -533,7 +561,49 @@ export default function App() {
       logs: [],
     });
     setStopPrompt(false);
+    setPendingOptions(null);
     setView("workout");
+  }
+
+  function startWorkout(workout: WorkoutDay) {
+    if (active) {
+      const replace = window.confirm("Replace the saved workout in progress?");
+      if (!replace) {
+        setView("workout");
+        return;
+      }
+    }
+
+    const groups = collectOptionGroups(workout);
+    if (groups.length > 0) {
+      setPendingOptions({
+        workout,
+        groups,
+        selected: Object.fromEntries(groups.map((group) => [group.id, group.choices[0].id])),
+      });
+      return;
+    }
+
+    beginWorkout(workout, {});
+  }
+
+  function chooseOption(groupId: string, exerciseId: string) {
+    setPendingOptions((pending) =>
+      pending
+        ? {
+            ...pending,
+            selected: {
+              ...pending.selected,
+              [groupId]: exerciseId,
+            },
+          }
+        : pending,
+    );
+  }
+
+  function startPendingWorkout() {
+    if (!pendingOptions) return;
+    beginWorkout(pendingOptions.workout, pendingOptions.selected);
   }
 
   function togglePause() {
@@ -699,7 +769,11 @@ export default function App() {
             sets: 1,
             repsMin: 8,
             repsMax: 8,
-            restSeconds: section.name === "Warm-up" || section.name === "Mobility" ? 0 : 60,
+            restSeconds:
+              section.name.toLowerCase().includes("warm-up") ||
+              section.name.toLowerCase().includes("mobility")
+                ? 0
+                : 60,
           };
           return {
             ...section,
@@ -1044,6 +1118,34 @@ export default function App() {
           Edit Workouts
         </button>
       </section>
+
+      {pendingOptions ? (
+        <div className="modal-backdrop" role="dialog" aria-modal="true">
+          <section className="stop-modal choice-modal">
+            <h2>Choose option</h2>
+            {pendingOptions.groups.map((group) => (
+              <div className="choice-group" key={group.id}>
+                <strong>{group.label}</strong>
+                <div className="choice-list">
+                  {group.choices.map((choice) => (
+                    <button
+                      className={pendingOptions.selected[group.id] === choice.id ? "choice-active" : ""}
+                      key={choice.id}
+                      onClick={() => chooseOption(group.id, choice.id)}
+                    >
+                      {choice.optionLabel ?? choice.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <button className="done-button" onClick={startPendingWorkout}>
+              Start Workout
+            </button>
+            <button onClick={() => setPendingOptions(null)}>Cancel</button>
+          </section>
+        </div>
+      ) : null}
     </main>
   );
 }
