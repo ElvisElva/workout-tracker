@@ -30,10 +30,19 @@ export function uid(prefix: string): string {
   return `${prefix}-${Math.random().toString(36).slice(2)}-${Date.now().toString(36)}`;
 }
 
-export function flattenWorkout(workout: WorkoutDay, bareMinimum: boolean): PlannedExercise[] {
+export function flattenWorkout(
+  workout: WorkoutDay,
+  bareMinimum: boolean,
+  selectedOptions: Record<string, string> = {},
+): PlannedExercise[] {
   return workout.sections.flatMap((section) =>
     section.exercises
-      .filter((exercise) => !bareMinimum || exercise.isBareMinimum)
+      .filter((exercise) => {
+        if (exercise.optionGroup && selectedOptions[exercise.optionGroup] !== exercise.id) {
+          return false;
+        }
+        return !bareMinimum || exercise.isBareMinimum;
+      })
       .map((exercise) => ({
         sectionName: section.name,
         exercise,
@@ -276,16 +285,27 @@ function progressValues(exercise: Exercise, values: ExerciseValue[]): ExerciseVa
   return next;
 }
 
+function didMeetTarget(actual: ExerciseValue, target: ExerciseValue): boolean {
+  if (typeof target.reps === "number" && (actual.reps ?? 0) < target.reps) return false;
+  if (typeof target.seconds === "number" && (actual.seconds ?? 0) < target.seconds) return false;
+  if (typeof target.distance === "number" && (actual.distance ?? 0) < target.distance) return false;
+  if (typeof target.weightKg === "number" && (actual.weightKg ?? 0) < target.weightKg) return false;
+  return true;
+}
+
 export function createProgressionFromLogs(
   exercise: Exercise,
   logs: ExerciseLog[],
 ): ProgressionSuggestion {
-  const completed = logs
+  const completedLogs = logs
     .filter((log) => log.status === "done")
-    .sort((a, b) => a.setNumber - b.setNumber || a.completedAt - b.completedAt)
-    .map((log) => log.actualValue);
+    .sort((a, b) => a.setNumber - b.setNumber || a.completedAt - b.completedAt);
+  const completed = completedLogs.map((log) => log.actualValue);
   const values = completed.length > 0 ? completed : [initialValueForExercise(exercise, false, {})];
-  const nextValues = progressValues(exercise, values);
+  const missedTarget = completedLogs.some((log) => !didMeetTarget(log.actualValue, log.targetValue));
+  const nextValues = missedTarget
+    ? completedLogs.map((log) => ({ ...log.targetValue }))
+    : progressValues(exercise, values);
 
   return {
     progressKey: getProgressKey(exercise),
