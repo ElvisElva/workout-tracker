@@ -132,8 +132,11 @@ export function targetText(exercise: Pick<Exercise, "type" | "notes">, value: Ex
       return `${load} x ${value.reps ?? 0}`;
     }
     case "distance":
-    case "jump":
       return `${value.distance ?? 0} ${value.distanceUnit ?? "m"}`;
+    case "jump": {
+      const distance = `${value.distance ?? 0} ${value.distanceUnit ?? "cm"}`;
+      return typeof value.reps === "number" ? `${value.reps} reps / ${distance}` : distance;
+    }
     case "carry": {
       const load =
         value.weightKg && value.weightKg > 0 ? `${value.weightKg} kg` : "bodyweight";
@@ -151,6 +154,14 @@ export function targetText(exercise: Pick<Exercise, "type" | "notes">, value: Ex
 export function resultText(exercise: Pick<Exercise, "type" | "notes">, values: ExerciseValue[]): string {
   const filled = values.filter(Boolean);
   if (filled.length === 0) return "";
+
+  if (exercise.type === "jump" && filled.every((value) => typeof value.distance === "number")) {
+    const first = filled[0];
+    const distances = filled.map((value) => value.distance).join(", ");
+    const unit = first.distanceUnit ?? "cm";
+    const reps = typeof first.reps === "number" ? ` x ${first.reps} reps` : "";
+    return `${distances} ${unit}${reps}`;
+  }
 
   if (filled.every((value) => typeof value.reps === "number")) {
     const reps = filled.map((value) => value.reps).join(", ");
