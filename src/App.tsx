@@ -847,6 +847,10 @@ export default function App() {
     const exercise = currentWorkout.exercise;
     const target = targetText(exercise, currentValue);
     const isTimed = exercise.type === "time" || exercise.type === "sprint";
+    const restAfterCurrent =
+      active.phase === "exercise" && isRestAllowed(active, currentWorkout)
+        ? exercise.restSeconds ?? 0
+        : 0;
 
     return (
       <main className="workout-screen">
@@ -871,6 +875,7 @@ export default function App() {
               <h1>{exercise.name}</h1>
               <p>Set {active.currentSet} of {exercise.sets}</p>
               <strong>{isTimed ? formatClock(timedRemaining) : target}</strong>
+              {restAfterCurrent > 0 ? <small>Rest after this {formatClock(restAfterCurrent)}</small> : null}
             </div>
           )}
 
